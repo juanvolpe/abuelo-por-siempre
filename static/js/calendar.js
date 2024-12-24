@@ -1,5 +1,5 @@
 // API configuration
-const API_BASE_URL = 'https://your-backend-api.herokuapp.com'; // You'll need to replace this with your actual API URL
+const API_BASE_URL = window.location.origin; // This will use the same domain as the frontend
 
 class Calendar {
     constructor() {
