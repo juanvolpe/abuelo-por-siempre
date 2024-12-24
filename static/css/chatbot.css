@@ -171,20 +171,66 @@
 /* Media Queries */
 @media (max-width: 1200px) {
     .chatbot-container {
-        height: 600px;
-        margin: 20px 0;
+        height: 500px;
+        margin: 15px 0;
+        padding: 15px;
     }
 
     .message {
-        max-width: 90%;
+        max-width: 85%;
         font-size: 13px;
+        padding: 10px 12px;
     }
 
     .chat-input-container {
-        padding: 12px;
+        padding: 10px;
     }
 
     .chat-input {
         font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    .send-button {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chatbot-container {
+        height: 400px;
+        margin: 10px 0;
+        padding: 12px;
+    }
+
+    .message {
+        max-width: 90%;
+        font-size: 12px;
+        padding: 8px 10px;
+        margin: 4px 0;
+    }
+
+    .chat-input-container {
+        padding: 8px;
+    }
+
+    .chat-input {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .send-button {
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .typing-indicator {
+        padding: 6px 10px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        margin: 0 2px;
     }
 } 

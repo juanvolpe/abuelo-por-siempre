@@ -322,31 +322,60 @@ body::after {
     }
 
     .container {
-        margin: 0 auto;
-        padding: 20px;
+        margin: 0;
+        padding: 15px;
+        width: calc(100% - 30px);
+        border-left: none;
     }
 
     .nav-bar {
-        padding: 10px 20px;
-        flex-direction: column;
-        gap: 10px;
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 15px;
+        background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
     }
 
-    .nav-brand {
-        font-size: 20px;
+    .nav-links {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 0;
+        gap: 8px;
     }
 
-    .card {
-        padding: 20px;
+    .nav-link {
+        width: calc(50% - 20px);
+        padding: 12px;
+        font-size: 14px;
+        margin: 0;
     }
 
     .grandpa-icon {
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
     }
 
     .nav-brand-container {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+    }
+
+    .quote-container {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-link {
+        width: 100%;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    .card {
+        padding: 15px;
     }
 }
 

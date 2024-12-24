@@ -444,36 +444,90 @@ input[type="file"] {
     .combined-container {
         flex-direction: column;
         height: auto;
+        padding: 10px;
     }
 
     .calendar-container {
-        height: 600px;
+        height: auto;
+        min-height: 400px;
+        padding: 15px;
+    }
+
+    .image-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     #currentWeek {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .day-card {
-        padding: 15px;
+        padding: 12px;
     }
 
     .day-name {
         font-size: 14px;
     }
 
+    .date-number {
+        font-size: 13px;
+    }
+
     .day-note {
         font-size: 13px;
         padding: 8px;
+        min-height: 80px;
+    }
+
+    .image-upload-label {
+        padding: 8px 12px;
+        font-size: 13px;
     }
 
     .modal-nav {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
     }
 
     .modal-content {
-        padding: 20px;
+        padding: 15px;
+    }
+
+    .modal-image {
+        max-width: 95%;
+        max-height: 90vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .image-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-container {
+        padding: 10px;
+    }
+
+    .day-card {
+        padding: 10px;
+    }
+
+    .image-actions {
+        flex-direction: column;
+    }
+
+    .modal-nav {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .modal-close {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        top: 10px;
+        right: 10px;
     }
 }
