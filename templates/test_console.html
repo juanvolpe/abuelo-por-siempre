@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Console Test</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .test-button {
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px;
+        }
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="instructions">
+            <h2>Console Test Page</h2>
+            <p>1. Open Developer Tools (Right-click > Inspect)</p>
+            <p>2. Click on "Console" tab</p>
+            <p>3. Click the button below</p>
+        </div>
+        <button onclick="testConsole()" class="test-button">Test Console Log</button>
+    </div>
+
+    <script>
+        console.log('Page loaded - check if you see this message');
+
+        function testConsole() {
+            console.log('=====================================');
+            console.log('Button clicked!');
+            console.warn('This is a warning message (yellow)');
+            console.error('This is an error message (red)');
+            console.log('=====================================');
+            
+            alert('Now check the console!\n\nYou should see several messages including:\n- A normal message\n- A yellow warning\n- A red error');
+        }
+    </script>
+</body>
+</html> 

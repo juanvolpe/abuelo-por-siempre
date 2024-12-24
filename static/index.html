@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abuelo por siempre</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/calendar.css">
+    <link rel="stylesheet" href="/css/quick_check.css">
+    <link rel="stylesheet" href="/css/chatbot.css">
+</head>
+<body>
+    <!-- Fixed Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-brand-container">
+            <a href="/" class="nav-brand">Abuelo por siempre</a>
+            <div class="grandpa-icon">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                    <!-- Grandpa's head -->
+                    <circle cx="50" cy="35" r="20" fill="#F5F1E8"/>
+                    <!-- Glasses -->
+                    <path d="M35 32 H65" stroke="#6D4C3D" stroke-width="2"/>
+                    <circle cx="40" cy="32" r="5" fill="none" stroke="#6D4C3D" stroke-width="2"/>
+                    <circle cx="60" cy="32" r="5" fill="none" stroke="#6D4C3D" stroke-width="2"/>
+                    <!-- Smile -->
+                    <path d="M42 38 Q50 44 58 38" stroke="#6D4C3D" stroke-width="2" fill="none"/>
+                    <!-- Hair -->
+                    <path d="M30 25 Q50 10 70 25" stroke="#B8A99A" stroke-width="4" fill="none"/>
+                    <!-- Body -->
+                    <path d="M50 55 L50 80" stroke="#D5C7B2" stroke-width="8"/>
+                    <!-- Arms -->
+                    <path d="M50 60 L30 70" stroke="#D5C7B2" stroke-width="6"/>
+                    <path d="M50 60 L70 70" stroke="#D5C7B2" stroke-width="6"/>
+                    <!-- Walking stick -->
+                    <path d="M70 70 L75 90" stroke="#967259" stroke-width="3"/>
+                </svg>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link active">
+                <i class="far fa-calendar-alt"></i>
+                <span>Calendar & Mood</span>
+            </a>
+            <a href="/chatbot" class="nav-link">
+                <i class="fas fa-comments"></i>
+                <span>Chat with Abuelo</span>
+            </a>
+        </div>
+        
+        <div class="quote-container">
+            <div class="quote-icon">
+                <i class="fas fa-quote-left"></i>
+            </div>
+            <p class="quote-text">"Los nietos son la recompensa de haber sido padres."</p>
+            <p class="quote-author">- Abuelo Cosi</p>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="combined-container">
+            <!-- Calendar Section -->
+            <div class="calendar-section">
+                <div class="section-header">
+                    <div class="container-title">Journal</div>
+                    <div class="container-subtitle">¿Cómo fue tu día con el abuelo?</div>
+                </div>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prevWeek" class="week-nav">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h2 id="currentWeek"></h2>
+                        <button id="nextWeek" class="week-nav">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="calendar-week-view">
+                        <div id="weekDays" class="week-days"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Check Section -->
+            <div class="quick-check-section">
+                <div class="section-header">
+                    <div class="container-title">Mood Tracker</div>
+                    <div class="container-subtitle">¿Cómo se sintió el abuelo durante la visita?</div>
+                </div>
+                <div class="quick-check-container">
+                    <div class="date-navigation">
+                        <button id="prevDay" class="nav-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h2 id="currentDate">Today</h2>
+                        <button id="nextDay" class="nav-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Name Selector -->
+                    <div class="name-selector">
+                        <select id="nameSelect" class="name-select">
+                            <option value="" disabled selected>Select your name</option>
+                            <option value="Clau">Clau</option>
+                            <option value="Nina">Nina</option>
+                            <option value="Maru">Maru</option>
+                        </select>
+                    </div>
+
+                    <div class="mood-selector">
+                        <h3>How did you feel?</h3>
+                        <div class="mood-icons">
+                            <button class="mood-btn" data-score="1">
+                                <i class="far fa-sad-cry"></i>
+                            </button>
+                            <button class="mood-btn" data-score="2">
+                                <i class="far fa-frown"></i>
+                            </button>
+                            <button class="mood-btn" data-score="3">
+                                <i class="far fa-meh"></i>
+                            </button>
+                            <button class="mood-btn" data-score="4">
+                                <i class="far fa-smile"></i>
+                            </button>
+                            <button class="mood-btn" data-score="5">
+                                <i class="far fa-grin-stars"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="message-input">
+                        <textarea id="moodMessage" maxlength="100" rows="3" placeholder="Add a note about your day..."></textarea>
+                        <div class="char-count"><span id="charCount">0</span>/100</div>
+                    </div>
+                    
+                    <div class="action-section">
+                        <button id="saveButton" class="save-btn">Save Entry</button>
+                        <div id="saveStatus" class="save-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageModal" class="image-modal">
+        <div class="modal-content">
+            <img class="modal-image" src="" alt="Full size image">
+            <button class="modal-close">&times;</button>
+            <button class="modal-nav prev">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="modal-nav next">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/calendar.js"></script>
+</body>
+</html> 

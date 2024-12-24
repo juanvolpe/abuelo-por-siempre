@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar & Quick Check{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/quick_check.css') }}">
+<style>
+.container-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--brown-600);
+    margin-bottom: 4px;
+}
+
+.container-subtitle {
+    font-size: 16px;
+    color: var(--brown-400);
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+.section-header {
+    margin-bottom: 20px;
+    text-align: left;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="combined-container">
+    <!-- Calendar Section -->
+    <div class="calendar-section">
+        <div class="section-header">
+            <div class="container-title">Journal</div>
+            <div class="container-subtitle">¿Cómo fue tu día con el abuelo?</div>
+        </div>
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevWeek" class="week-nav">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2 id="currentWeek"></h2>
+                <button id="nextWeek" class="week-nav">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="calendar-week-view">
+                <div id="weekDays" class="week-days"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Check Section -->
+    <div class="quick-check-section">
+        <div class="section-header">
+            <div class="container-title">Mood Tracker</div>
+            <div class="container-subtitle">¿Cómo se sintió el abuelo durante la visita?</div>
+        </div>
+        <div class="quick-check-container">
+            <div class="date-navigation">
+                <button id="prevDay" class="nav-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2 id="currentDate">Today</h2>
+                <button id="nextDay" class="nav-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Name Selector -->
+            <div class="name-selector">
+                <select id="nameSelect" class="name-select">
+                    <option value="" disabled selected>Select your name</option>
+                    <option value="Clau">Clau</option>
+                    <option value="Nina">Nina</option>
+                    <option value="Maru">Maru</option>
+                </select>
+            </div>
+
+            <div class="mood-selector">
+                <h3>How did you feel?</h3>
+                <div class="mood-icons">
+                    <button class="mood-btn" data-score="1">
+                        <i class="far fa-sad-cry"></i>
+                    </button>
+                    <button class="mood-btn" data-score="2">
+                        <i class="far fa-frown"></i>
+                    </button>
+                    <button class="mood-btn" data-score="3">
+                        <i class="far fa-meh"></i>
+                    </button>
+                    <button class="mood-btn" data-score="4">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <button class="mood-btn" data-score="5">
+                        <i class="far fa-grin-stars"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="message-input">
+                <textarea id="moodMessage" maxlength="100" rows="3" placeholder="Add a note about your day..."></textarea>
+                <div class="char-count"><span id="charCount">0</span>/100</div>
+            </div>
+            
+            <div class="action-section">
+                <button id="saveButton" class="save-btn">Save Entry</button>
+                <div id="saveStatus" class="save-status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="imageModal" class="image-modal">
+    <div class="modal-content">
+        <img class="modal-image" src="" alt="Full size image">
+        <button class="modal-close">&times;</button>
+        <button class="modal-nav prev">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="modal-nav next">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Quick Check script starting...');
+        
+        const elements = {
+            moodButtons: document.querySelectorAll('.mood-btn'),
+            moodMessage: document.getElementById('moodMessage'),
+            charCount: document.getElementById('charCount'),
+            saveButton: document.getElementById('saveButton'),
+            saveStatus: document.getElementById('saveStatus'),
+            prevDayBtn: document.getElementById('prevDay'),
+            nextDayBtn: document.getElementById('nextDay'),
+            currentDateDisplay: document.getElementById('currentDate'),
+            nameSelect: document.getElementById('nameSelect')
+        };
+
+        let selectedScore = null;
+        let currentDate = new Date();
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        elements.moodButtons.forEach(button => {
+            button.onclick = function(e) {
+                e.preventDefault();
+                const score = parseInt(button.dataset.score);
+                selectedScore = score;
+
+                elements.moodButtons.forEach(btn => {
+                    btn.classList.remove('selected');
+                    btn.querySelector('i').style.color = 'var(--gray-400)';
+                });
+                button.classList.add('selected');
+                button.querySelector('i').style.color = '#4CAF50';
+            };
+        });
+
+        elements.saveButton.onclick = function(e) {
+            e.preventDefault();
+            console.log('Save button clicked');
+
+            if (!elements.nameSelect.value) {
+                console.log('No name selected');
+                alert('Please select your name before saving.');
+                return;
+            }
+
+            if (!selectedScore) {
+                console.log('No mood selected');
+                alert('Please select a mood before saving.');
+                return;
+            }
+
+            const data = {
+                date: currentDate.toISOString().split('T')[0],
+                name: elements.nameSelect.value,
+                score: selectedScore,
+                message: elements.moodMessage.value
+            };
+
+            console.log('Sending data to server:', data);
+
+            fetch('/quick-check/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    elements.saveStatus.textContent = '✓ Entry saved successfully';
+                    elements.saveStatus.classList.add('show');
+                    setTimeout(() => {
+                        elements.saveStatus.classList.remove('show');
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || 'Failed to save');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to save entry: ' + error.message);
+            });
+        };
+
+        elements.prevDayBtn.onclick = function(e) {
+            e.preventDefault();
+            const newDate = new Date(currentDate);
+            newDate.setDate(currentDate.getDate() - 1);
+            if (newDate >= oneWeekAgo) {
+                currentDate = newDate;
+                updateDateDisplay();
+            }
+        };
+
+        elements.nextDayBtn.onclick = function(e) {
+            e.preventDefault();
+            const newDate = new Date(currentDate);
+            newDate.setDate(currentDate.getDate() + 1);
+            if (newDate <= new Date()) {
+                currentDate = newDate;
+                updateDateDisplay();
+            }
+        };
+
+        elements.moodMessage.oninput = function() {
+            elements.charCount.textContent = this.value.length;
+        };
+
+        function updateDateDisplay() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            currentDate.setHours(0, 0, 0, 0);
+            
+            if (currentDate.getTime() === today.getTime()) {
+                elements.currentDateDisplay.textContent = 'Today';
+            } else {
+                const options = { weekday: 'long', month: 'long', day: 'numeric' };
+                elements.currentDateDisplay.textContent = currentDate.toLocaleDateString('en-US', options);
+            }
+
+            elements.nextDayBtn.disabled = currentDate.getTime() === today.getTime();
+            elements.prevDayBtn.disabled = currentDate.getTime() <= oneWeekAgo.getTime();
+
+            resetForm();
+            loadMoodData();
+        }
+
+        function resetForm() {
+            console.log('Resetting form');
+            selectedScore = null;
+            elements.moodMessage.value = '';
+            elements.charCount.textContent = '0';
+            elements.nameSelect.value = '';
+            elements.moodButtons.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.querySelector('i').style.color = 'var(--gray-400)';
+            });
+        }
+
+        function loadMoodData() {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            console.log('Loading mood data for:', dateStr);
+            
+            fetch(`/quick-check/data/${dateStr}`)
+                .then(response => {
+                    console.log('Load response:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Loaded data:', data);
+                    if (data.score) {
+                        selectedScore = data.score;
+                        elements.moodMessage.value = data.message || '';
+                        elements.charCount.textContent = elements.moodMessage.value.length;
+                        elements.nameSelect.value = data.name || '';
+
+                        const selectedButton = document.querySelector(`.mood-btn[data-score="${data.score}"]`);
+                        if (selectedButton) {
+                            selectedButton.classList.add('selected');
+                            selectedButton.querySelector('i').style.color = '#4CAF50';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading mood data:', error);
+                });
+        }
+
+        updateDateDisplay();
+    });
+</script>
+{% endblock %} 

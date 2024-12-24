@@ -1,0 +1,75 @@
+.menu-icon {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 24px;
+}
+
+.side-menu {
+    position: fixed;
+    left: -250px;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #333;
+    transition: 0.3s;
+    z-index: 999;
+}
+
+.side-menu.active {
+    left: 0;
+}
+
+.side-menu ul {
+    padding: 60px 0 0 0;
+    list-style: none;
+}
+
+.side-menu ul li {
+    padding: 15px 30px;
+}
+
+.side-menu ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+}
+
+.side-menu ul li a:hover {
+    color: #ddd;
+}
+
+/* Hide default file input completely */
+input[type="file"] {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Style file input */
+input[type="file"] {
+    background-color: #ffcccc;
+    color: #cc0000;
+    border: 1px solid #ff0000;
+    padding: 5px;
+    border-radius: 4px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button {
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+} 

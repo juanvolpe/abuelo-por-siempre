@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with Abuelo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="chatbot-container">
+    <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+            ¡Hola mi amor! I'm your Abuelo. How can I help you today?
+        </div>
+    </div>
+    
+    <div class="chat-input-container">
+        <textarea 
+            class="chat-input" 
+            id="messageInput" 
+            placeholder="Type your message here..." 
+            rows="1"
+            maxlength="500"
+        ></textarea>
+        <button class="send-button" id="sendButton">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const chatMessages = document.getElementById('chatMessages');
+    const sessionId = Date.now().toString(); // Simple session ID
+
+    function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        messageDiv.textContent = content;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addTypingIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator';
+        indicator.innerHTML = `
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        `;
+        chatMessages.appendChild(indicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return indicator;
+    }
+
+    function removeTypingIndicator(indicator) {
+        if (indicator && indicator.parentNode) {
+            indicator.parentNode.removeChild(indicator);
+        }
+    }
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Clear input
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+
+        // Add user message
+        addMessage(message, true);
+
+        // Add typing indicator
+        const typingIndicator = addTypingIndicator();
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-ID': sessionId
+                },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+            
+            // Remove typing indicator
+            removeTypingIndicator(typingIndicator);
+
+            if (data.error) {
+                addMessage('Lo siento, I had trouble understanding that. Can you try again?');
+            } else {
+                addMessage(data.response);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            removeTypingIndicator(typingIndicator);
+            addMessage('Lo siento, I had trouble responding. Can you try again?');
+        }
+    }
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Send message on enter (but allow shift+enter for new line)
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Send message on button click
+    sendButton.addEventListener('click', sendMessage);
+});
+</script>
+{% endblock %} 
