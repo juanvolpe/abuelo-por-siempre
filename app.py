@@ -15,7 +15,7 @@ import openai
 # Set up data directory for persistent storage
 DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
 CSV_DIR = os.path.join(DATA_DIR, 'csv')
-IMAGES_DIR = os.path.join(DATA_DIR, 'images')
+IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
 
 # Create directories if they don't exist
 os.makedirs(CSV_DIR, exist_ok=True)
@@ -237,32 +237,42 @@ def upload_image():
         return jsonify({'error': 'No selected file'}), 400
     
     if file and allowed_file(file.filename):
-        filename = secure_filename(f"{date}_{int(time.time())}_{file.filename}")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        
-        notes = load_calendar_notes()
-        if date not in notes:
-            notes[date] = {'text': '', 'images': []}
-        elif isinstance(notes[date], str):
-            notes[date] = {'text': notes[date], 'images': []}
-        elif not isinstance(notes[date], dict):
-            notes[date] = {'text': '', 'images': []}
-        
-        if isinstance(notes[date], dict):
-            if 'images' not in notes[date]:
-                notes[date]['images'] = []
-            if 'image' in notes[date]:
-                notes[date]['images'].append(notes[date]['image'])
-                del notes[date]['image']
-            if 'text' not in notes[date]:
-                notes[date]['text'] = ''
-        
-        image_url = f"static/images/{filename}"
-        notes[date]['images'].append(image_url)
-        
-        save_calendar_notes(notes)
-        return jsonify({'image_url': image_url})
+        try:
+            filename = secure_filename(f"{date}_{int(time.time())}_{file.filename}")
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            # Ensure the upload directory exists
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            
+            # Save the file
+            file.save(filepath)
+            
+            notes = load_calendar_notes()
+            if date not in notes:
+                notes[date] = {'text': '', 'images': []}
+            elif isinstance(notes[date], str):
+                notes[date] = {'text': notes[date], 'images': []}
+            elif not isinstance(notes[date], dict):
+                notes[date] = {'text': '', 'images': []}
+            
+            if isinstance(notes[date], dict):
+                if 'images' not in notes[date]:
+                    notes[date]['images'] = []
+                if 'image' in notes[date]:
+                    notes[date]['images'].append(notes[date]['image'])
+                    del notes[date]['image']
+                if 'text' not in notes[date]:
+                    notes[date]['text'] = ''
+            
+            image_url = f"/static/images/{filename}"
+            notes[date]['images'].append(image_url)
+            
+            save_calendar_notes(notes)
+            return jsonify({'image_url': image_url})
+            
+        except Exception as e:
+            print(f"Error saving image: {str(e)}")
+            return jsonify({'error': f'Failed to save image: {str(e)}'}), 500
     
     return jsonify({'error': 'Invalid file type'}), 400
 
@@ -278,11 +288,13 @@ def remove_image():
     notes = load_calendar_notes()
     if date in notes and isinstance(notes[date], dict) and 'images' in notes[date]:
         try:
-            image_path = notes[date]['images'][index]
-            if image_path.startswith('static/'):
-                full_path = os.path.join(os.path.dirname(__file__), image_path)
-                if os.path.exists(full_path):
-                    os.remove(full_path)
+            image_url = notes[date]['images'][index]
+            if image_url.startswith('/static/'):
+                image_url = image_url[1:]  # Remove leading slash
+            
+            image_path = os.path.join(os.path.dirname(__file__), image_url)
+            if os.path.exists(image_path):
+                os.remove(image_path)
             
             notes[date]['images'].pop(index)
             save_calendar_notes(notes)
