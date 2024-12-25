@@ -323,59 +323,85 @@ body::after {
 
     .container {
         margin: 0;
-        padding: 15px;
-        width: calc(100% - 30px);
+        padding: 20px;
+        width: calc(100% - 40px);
         border-left: none;
+        transition: transform 0.3s ease;
+    }
+
+    body.nav-open .container {
+        transform: translateX(80%);
     }
 
     .nav-bar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding: 15px;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
         background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
+        padding: 60px 20px 20px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+    }
+
+    .nav-bar.show {
+        transform: translateX(0);
     }
 
     .nav-links {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-direction: column;
         padding: 0;
-        gap: 8px;
+        gap: 15px;
     }
 
     .nav-link {
-        width: calc(50% - 20px);
-        padding: 12px;
-        font-size: 14px;
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
         margin: 0;
+        text-align: left;
+    }
+
+    .grandpa-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .nav-brand-container {
+        margin-bottom: 30px;
+    }
+
+    .quote-container {
+        margin-top: auto;
+        padding: 20px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+        width: calc(100% - 30px);
+    }
+
+    .nav-bar {
+        width: 85%;
+    }
+
+    body.nav-open .container {
+        transform: translateX(85%);
+    }
+
+    .nav-link {
+        padding: 12px;
+        font-size: 15px;
     }
 
     .grandpa-icon {
         width: 60px;
         height: 60px;
-    }
-
-    .nav-brand-container {
-        margin-bottom: 15px;
-    }
-
-    .quote-container {
-        display: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .nav-link {
-        width: 100%;
-    }
-
-    .container {
-        padding: 10px;
-    }
-
-    .card {
-        padding: 15px;
     }
 }
 
@@ -456,4 +482,97 @@ body::after {
     margin-bottom: 20px;
     text-align: left;
     padding: 0 10px;
+}
+
+/* Hamburger Menu - Hidden by default on desktop */
+.hamburger-menu {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    background: var(--gray-800);
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover {
+    background: var(--gray-700);
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--white);
+    margin: 4px 0;
+    transition: all 0.3s ease;
+}
+
+/* Mobile Navigation Styles */
+@media (max-width: 768px) {
+    .hamburger-menu {
+        display: block;
+    }
+
+    .nav-bar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
+        padding: 60px 20px 20px;
+        z-index: 999;
+    }
+
+    .nav-bar.show {
+        transform: translateX(0);
+    }
+
+    /* Overlay when nav is open */
+    .nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .nav-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Adjust container margin when nav is hidden */
+    .container {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+    }
+
+    /* Animation for hamburger to X */
+    .hamburger-menu.active span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger-menu.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-menu.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+    }
 }
