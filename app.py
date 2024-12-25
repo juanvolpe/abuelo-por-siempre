@@ -15,11 +15,20 @@ import openai
 # Set up data directory for persistent storage
 DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
 CSV_DIR = os.path.join(DATA_DIR, 'csv')
-IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
+IMAGES_DIR = os.path.join(DATA_DIR, 'static', 'images') if os.path.exists('/data') else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
 
 # Create directories if they don't exist
 os.makedirs(CSV_DIR, exist_ok=True)
 os.makedirs(IMAGES_DIR, exist_ok=True)
+
+# Create symbolic link for static/images if we're on Render
+if os.path.exists('/data'):
+    static_images_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
+    if not os.path.exists(static_images_path):
+        os.makedirs(os.path.dirname(static_images_path), exist_ok=True)
+        if os.path.exists(static_images_path):
+            os.remove(static_images_path)
+        os.symlink(IMAGES_DIR, static_images_path)
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 CORS(app, resources={r"/*": {
