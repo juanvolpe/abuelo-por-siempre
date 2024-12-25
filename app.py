@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import csv
@@ -21,17 +21,22 @@ IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 
 os.makedirs(CSV_DIR, exist_ok=True)
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
-app = Flask(__name__)
-CORS(app, resources={
-    r"/calendar/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "DELETE"],
-        "allow_headers": ["Content-Type", "X-Requested-With"]
-    }
-})
+app = Flask(__name__, static_url_path='/static', static_folder='static')
+CORS(app, resources={r"/*": {
+    "origins": "*",
+    "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "X-Requested-With", "Accept", "Origin"]
+}})
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DATA_DIR, "names.db")}'
 app.config['UPLOAD_FOLDER'] = IMAGES_DIR
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Add route to serve static files
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(app.static_folder, filename)
+
 db = SQLAlchemy(app)
 
 # File paths
