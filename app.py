@@ -22,9 +22,16 @@ os.makedirs(CSV_DIR, exist_ok=True)
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={
+    r"/calendar/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "DELETE"],
+        "allow_headers": ["Content-Type", "X-Requested-With"]
+    }
+})
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(DATA_DIR, "names.db")}'
 app.config['UPLOAD_FOLDER'] = IMAGES_DIR
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 db = SQLAlchemy(app)
 
 # File paths
@@ -224,11 +231,15 @@ def save_note():
 
 @app.route('/calendar/upload', methods=['POST'])
 def upload_image():
+    print("Upload endpoint hit")  # Debug log
     if 'image' not in request.files:
+        print("No image in request")  # Debug log
         return jsonify({'error': 'No image provided'}), 400
     
     file = request.files['image']
     date = request.form.get('date')
+    
+    print(f"Received file: {file.filename}, date: {date}")  # Debug log
     
     if not file or not date:
         return jsonify({'error': 'Invalid request'}), 400
@@ -241,11 +252,14 @@ def upload_image():
             filename = secure_filename(f"{date}_{int(time.time())}_{file.filename}")
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             
+            print(f"Saving file to: {filepath}")  # Debug log
+            
             # Ensure the upload directory exists
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             
             # Save the file
             file.save(filepath)
+            print(f"File saved successfully")  # Debug log
             
             notes = load_calendar_notes()
             if date not in notes:
@@ -268,10 +282,11 @@ def upload_image():
             notes[date]['images'].append(image_url)
             
             save_calendar_notes(notes)
+            print(f"Notes saved successfully, returning URL: {image_url}")  # Debug log
             return jsonify({'image_url': image_url})
             
         except Exception as e:
-            print(f"Error saving image: {str(e)}")
+            print(f"Error saving image: {str(e)}")  # Debug log
             return jsonify({'error': f'Failed to save image: {str(e)}'}), 500
     
     return jsonify({'error': 'Invalid file type'}), 400
@@ -305,7 +320,7 @@ def remove_image():
     return jsonify({'error': 'Image not found'}), 404
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'}  # Added HEIC/HEIF support
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/quick-check/save', methods=['POST'])
