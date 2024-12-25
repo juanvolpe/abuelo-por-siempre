@@ -11,15 +11,42 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import openai
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+print("Checking data directory...")
+print(f"Does /data exist? {os.path.exists('/data')}")
+print(f"Current directory contents: {os.listdir('/')}")
+if os.path.exists('/data'):
+    print(f"Data directory contents: {os.listdir('/data')}")
 
 # Set up data directory for persistent storage
 DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
 CSV_DIR = os.path.join(DATA_DIR, 'csv')
-IMAGES_DIR = os.path.join(DATA_DIR, 'static', 'images') if os.path.exists('/data') else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
+STATIC_DIR = os.path.join(DATA_DIR, 'static')
+IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
 
-# Create directories if they don't exist
-os.makedirs(CSV_DIR, exist_ok=True)
-os.makedirs(IMAGES_DIR, exist_ok=True)
+# Enhanced directory creation with logging
+def ensure_directories():
+    directories = [
+        DATA_DIR,
+        CSV_DIR,
+        STATIC_DIR,
+        IMAGES_DIR
+    ]
+    
+    for directory in directories:
+        try:
+            os.makedirs(directory, exist_ok=True)
+            print(f"Created directory: {directory}")  # Add explicit print for debugging
+        except Exception as e:
+            print(f"Error creating directory {directory}: {str(e)}")
+
+# Call this function before Flask app setup
+ensure_directories()
 
 # Create symbolic link for static/images if we're on Render
 if os.path.exists('/data'):
@@ -30,7 +57,7 @@ if os.path.exists('/data'):
             os.remove(static_images_path)
         os.symlink(IMAGES_DIR, static_images_path)
 
-app = Flask(__name__, static_url_path='/static', static_folder='static')
+app = Flask(__name__, static_folder=STATIC_DIR)
 CORS(app, resources={r"/*": {
     "origins": "*",
     "methods": ["GET", "POST", "DELETE", "OPTIONS"],
@@ -53,22 +80,25 @@ DATA_CSV = os.path.join(CSV_DIR, 'data.csv')
 CALENDAR_NOTES_CSV = os.path.join(CSV_DIR, 'calendar_notes.csv')
 MOOD_TRACKER_CSV = os.path.join(CSV_DIR, 'mood_tracker.csv')
 
-# Create empty CSV files if they don't exist
+# Update init_csv_files() with logging
 def init_csv_files():
-    if not os.path.exists(DATA_CSV):
-        with open(DATA_CSV, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['first_name', 'last_name', 'image_path'])
-
-    if not os.path.exists(CALENDAR_NOTES_CSV):
-        with open(CALENDAR_NOTES_CSV, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['date', 'note'])
-
-    if not os.path.exists(MOOD_TRACKER_CSV):
-        with open(MOOD_TRACKER_CSV, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['date', 'name', 'score', 'message'])
+    csv_files = {
+        DATA_CSV: ['first_name', 'last_name', 'image_path'],
+        CALENDAR_NOTES_CSV: ['date', 'note'],
+        MOOD_TRACKER_CSV: ['date', 'name', 'score', 'message']
+    }
+    
+    for file_path, headers in csv_files.items():
+        try:
+            if not os.path.exists(file_path):
+                logger.info(f"Creating CSV file: {file_path}")
+                with open(file_path, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(headers)
+            else:
+                logger.info(f"CSV file exists: {file_path}")
+        except Exception as e:
+            logger.error(f"Error with CSV file {file_path}: {str(e)}")
 
 init_csv_files()
 
@@ -242,18 +272,13 @@ def save_note():
         
     except Exception as e:
         return jsonify({'error': 'Failed to save note'}), 500
-
 @app.route('/calendar/upload', methods=['POST'])
 def upload_image():
-    print("Upload endpoint hit")  # Debug log
     if 'image' not in request.files:
-        print("No image in request")  # Debug log
         return jsonify({'error': 'No image provided'}), 400
     
     file = request.files['image']
     date = request.form.get('date')
-    
-    print(f"Received file: {file.filename}, date: {date}")  # Debug log
     
     if not file or not date:
         return jsonify({'error': 'Invalid request'}), 400
@@ -262,47 +287,35 @@ def upload_image():
         return jsonify({'error': 'No selected file'}), 400
     
     if file and allowed_file(file.filename):
+        filename = secure_filename(f"{date}_{int(time.time())}_{file.filename}")
+        
+        # Save to the images directory inside static
+        filepath = os.path.join(IMAGES_DIR, filename)
         try:
-            filename = secure_filename(f"{date}_{int(time.time())}_{file.filename}")
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
-            print(f"Saving file to: {filepath}")  # Debug log
-            
-            # Ensure the upload directory exists
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
-            
-            # Save the file
             file.save(filepath)
-            print(f"File saved successfully")  # Debug log
+            print(f"Saved image to: {filepath}")  # Debug print
+            
+            # Use relative path for URL
+            image_url = f"/static/images/{filename}"
             
             notes = load_calendar_notes()
             if date not in notes:
                 notes[date] = {'text': '', 'images': []}
             elif isinstance(notes[date], str):
                 notes[date] = {'text': notes[date], 'images': []}
-            elif not isinstance(notes[date], dict):
-                notes[date] = {'text': '', 'images': []}
             
-            if isinstance(notes[date], dict):
-                if 'images' not in notes[date]:
-                    notes[date]['images'] = []
-                if 'image' in notes[date]:
-                    notes[date]['images'].append(notes[date]['image'])
-                    del notes[date]['image']
-                if 'text' not in notes[date]:
-                    notes[date]['text'] = ''
+            if 'images' not in notes[date]:
+                notes[date]['images'] = []
             
-            image_url = f"/static/images/{filename}"
             notes[date]['images'].append(image_url)
-            
             save_calendar_notes(notes)
-            print(f"Notes saved successfully, returning URL: {image_url}")  # Debug log
-            return jsonify({'image_url': image_url})
             
+            return jsonify({'image_url': image_url})
         except Exception as e:
-            print(f"Error saving image: {str(e)}")  # Debug log
+            print(f"Error saving image: {str(e)}")  # Debug print
             return jsonify({'error': f'Failed to save image: {str(e)}'}), 500
     
+    return jsonify({'error': 'Invalid file type'}), 400
     return jsonify({'error': 'Invalid file type'}), 400
 
 @app.route('/calendar/remove-image', methods=['POST'])
@@ -441,6 +454,18 @@ def chat():
             'error': 'Failed to process message',
             'response': f'Lo siento, I had trouble understanding that. Error: {str(e)}'
         }), 500
+
+@app.route('/test-directories')
+def test_directories():
+    try:
+        dirs = {
+            'DATA_DIR': {'path': DATA_DIR, 'exists': os.path.exists(DATA_DIR), 'contents': os.listdir(DATA_DIR) if os.path.exists(DATA_DIR) else []},
+            'STATIC_DIR': {'path': STATIC_DIR, 'exists': os.path.exists(STATIC_DIR), 'contents': os.listdir(STATIC_DIR) if os.path.exists(STATIC_DIR) else []},
+            'IMAGES_DIR': {'path': IMAGES_DIR, 'exists': os.path.exists(IMAGES_DIR), 'contents': os.listdir(IMAGES_DIR) if os.path.exists(IMAGES_DIR) else []}
+        }
+        return jsonify(dirs)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8082, debug=True) 
