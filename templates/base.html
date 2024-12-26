@@ -28,7 +28,7 @@
         
         <div class="logo-container">
             <div class="logo">
-                <img src="{{ url_for('static', filename='images/cosi_icon.png') }}" alt="Abuelo Cosi" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                <img src="{{ url_for('static', filename='images/cosi_icon.png') }}" alt="Abuelo Cosi" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" onerror="console.error('Failed to load image:', this.src);">
             </div>
             <h1 class="nav-title">Abuelo por siempre</h1>
         </div>
