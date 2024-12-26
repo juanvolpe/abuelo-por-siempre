@@ -21,6 +21,24 @@
             </button>
         </div>
     </div>
+
+    <div class="admin-section">
+        <h2>Mood Tracker Entries</h2>
+        <div class="mood-tracker-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="moodTrackerList">
+                    <!-- Mood tracker entries will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
     
     <div class="admin-section">
         <h2>Files Management</h2>
@@ -189,12 +207,53 @@
     font-size: 30px;
     cursor: pointer;
 }
+
+/* Mood Tracker Table Styles */
+.mood-tracker-table {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.mood-tracker-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.mood-tracker-table th,
+.mood-tracker-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mood-tracker-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.mood-tracker-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.mood-tracker-table .score {
+    font-weight: 600;
+}
+
+.mood-tracker-table .score-1 { color: #dc3545; }
+.mood-tracker-table .score-2 { color: #fd7e14; }
+.mood-tracker-table .score-3 { color: #ffc107; }
+.mood-tracker-table .score-4 { color: #28a745; }
+.mood-tracker-table .score-5 { color: #20c997; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     loadFiles();
     loadNotes();
+    loadMoodTrackerEntries();
     
     // Set up modal
     const modal = document.getElementById('imageModal');
@@ -396,6 +455,7 @@ async function cleanupMoodTracker() {
         
         if (response.ok) {
             alert('All mood tracker data has been deleted successfully');
+            loadMoodTrackerEntries();
         } else {
             const data = await response.json();
             alert(`Failed to delete mood tracker data: ${data.error}`);
@@ -403,6 +463,38 @@ async function cleanupMoodTracker() {
     } catch (error) {
         console.error('Error cleaning up mood tracker:', error);
         alert('Error cleaning up mood tracker');
+    }
+}
+
+async function loadMoodTrackerEntries() {
+    try {
+        const response = await fetch('/admin/mood-tracker');
+        const data = await response.json();
+        
+        const tbody = document.getElementById('moodTrackerList');
+        tbody.innerHTML = '';
+        
+        data.entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+            const tr = document.createElement('tr');
+            
+            const dateCell = document.createElement('td');
+            dateCell.textContent = new Date(entry.date).toLocaleDateString();
+            
+            const nameCell = document.createElement('td');
+            nameCell.textContent = entry.name;
+            
+            const scoreCell = document.createElement('td');
+            scoreCell.className = `score score-${entry.score}`;
+            scoreCell.textContent = entry.score;
+            
+            tr.appendChild(dateCell);
+            tr.appendChild(nameCell);
+            tr.appendChild(scoreCell);
+            
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error loading mood tracker entries:', error);
     }
 }
 </script>

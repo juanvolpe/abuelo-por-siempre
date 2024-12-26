@@ -624,5 +624,18 @@ def cleanup_mood_tracker():
         print(f"Error cleaning up mood tracker: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/admin/mood-tracker', methods=['GET'])
+def get_mood_tracker_entries():
+    try:
+        entries = []
+        if os.path.exists(MOOD_TRACKER_CSV):
+            with open(MOOD_TRACKER_CSV, 'r') as f:
+                reader = csv.DictReader(f)
+                entries = [{'date': row['date'], 'name': row['name'], 'score': int(row['score'])} for row in reader]
+        return jsonify({'entries': entries})
+    except Exception as e:
+        print(f"Error getting mood tracker entries: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8082, debug=True) 
