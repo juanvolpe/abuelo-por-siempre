@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from openai import OpenAI
 import logging
 
-# Set up logging Cambio testeo
+# Set up logging Cambio testeo2
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
