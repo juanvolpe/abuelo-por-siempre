@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Admin Dashboard</h1>
+    
+    <div class="admin-section">
+        <h2>Files Management</h2>
+        <div class="directory-explorer">
+            <h3>Images Directory</h3>
+            <div class="files-list" id="imagesList">
+                <!-- Files will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="directory-explorer">
+            <h3>Calendar Notes</h3>
+            <div class="files-list" id="notesList">
+                <!-- Notes will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <img id="modalImage" src="" alt="Full size image">
+    </div>
+</div>
+
+<style>
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.directory-explorer {
+    margin-bottom: 30px;
+}
+
+.files-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.file-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.file-info {
+    font-size: 14px;
+}
+
+.file-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.file-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.view-btn {
+    background: #007bff;
+    color: white;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90vh;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.modal-content img {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadFiles();
+    loadNotes();
+    
+    // Set up modal
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const span = document.getElementsByClassName('close')[0];
+    
+    span.onclick = function() {
+        modal.style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+});
+
+async function loadFiles() {
+    try {
+        const response = await fetch('/admin/files');
+        const data = await response.json();
+        
+        const imagesList = document.getElementById('imagesList');
+        imagesList.innerHTML = '';
+        
+        data.images.forEach(file => {
+            const fileItem = createFileItem(file);
+            imagesList.appendChild(fileItem);
+        });
+    } catch (error) {
+        console.error('Error loading files:', error);
+    }
+}
+
+async function loadNotes() {
+    try {
+        const response = await fetch('/calendar/notes');
+        const notes = await response.json();
+        
+        const notesList = document.getElementById('notesList');
+        notesList.innerHTML = '';
+        
+        Object.entries(notes).forEach(([date, note]) => {
+            const noteItem = createNoteItem(date, note);
+            notesList.appendChild(noteItem);
+        });
+    } catch (error) {
+        console.error('Error loading notes:', error);
+    }
+}
+
+function createFileItem(file) {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    
+    const img = document.createElement('img');
+    img.src = `/static/images/${file}`;
+    img.alt = file;
+    img.onclick = () => showImage(file);
+    
+    const info = document.createElement('div');
+    info.className = 'file-info';
+    info.textContent = file;
+    
+    const actions = document.createElement('div');
+    actions.className = 'file-actions';
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.onclick = () => deleteFile(file);
+    
+    actions.appendChild(deleteBtn);
+    div.appendChild(img);
+    div.appendChild(info);
+    div.appendChild(actions);
+    
+    return div;
+}
+
+function createNoteItem(date, note) {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    
+    const dateHeader = document.createElement('h4');
+    dateHeader.textContent = new Date(date).toLocaleDateString();
+    
+    const noteText = document.createElement('p');
+    noteText.textContent = note.text || 'No text';
+    
+    const imagesCount = note.images ? note.images.length : 0;
+    const imagesInfo = document.createElement('p');
+    imagesInfo.textContent = `Images: ${imagesCount}`;
+    
+    div.appendChild(dateHeader);
+    div.appendChild(noteText);
+    div.appendChild(imagesInfo);
+    
+    return div;
+}
+
+function showImage(filename) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modal.style.display = 'block';
+    modalImg.src = `/static/images/${filename}`;
+}
+
+async function deleteFile(filename) {
+    if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/admin/files', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ filename })
+        });
+        
+        if (response.ok) {
+            loadFiles();
+        } else {
+            alert('Failed to delete file');
+        }
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        alert('Error deleting file');
+    }
+}
+</script>
+{% endblock %} 

@@ -534,5 +534,47 @@ def test_directories():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/admin')
+def admin():
+    return render_template('admin.html')
+
+@app.route('/admin/files', methods=['GET'])
+def list_files():
+    try:
+        images = []
+        if os.path.exists(IMAGES_DIR):
+            images = [f for f in os.listdir(IMAGES_DIR) if os.path.isfile(os.path.join(IMAGES_DIR, f))]
+        return jsonify({'images': images})
+    except Exception as e:
+        print(f"Error listing files: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/files', methods=['DELETE'])
+def delete_file():
+    try:
+        data = request.get_json()
+        filename = data.get('filename')
+        if not filename:
+            return jsonify({'error': 'Filename is required'}), 400
+
+        file_path = os.path.join(IMAGES_DIR, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            
+            # Also remove the file reference from notes
+            notes = load_calendar_notes()
+            for date in notes:
+                if isinstance(notes[date], dict) and 'images' in notes[date]:
+                    notes[date]['images'] = [img for img in notes[date]['images'] 
+                                           if not img.endswith(filename)]
+            save_calendar_notes(notes)
+            
+            return jsonify({'success': True})
+        else:
+            return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        print(f"Error deleting file: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8082, debug=True) 
