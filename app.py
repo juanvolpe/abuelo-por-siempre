@@ -104,6 +104,7 @@ init_csv_files()
 
 # OpenAI Configuration
 openai.api_key = os.getenv('OPENAI_API_KEY')
+print(f"OpenAI API Key configured: {'Yes' if openai.api_key else 'No'}")  # Debug log
 
 # Email configuration
 SMTP_SERVER = "smtp.gmail.com"
@@ -415,6 +416,7 @@ def chatbot():
 def chat():
     try:
         if not openai.api_key:
+            print("OpenAI API key is not set")  # Debug log
             return jsonify({
                 'error': 'OpenAI API key not configured',
                 'response': 'Lo siento, I am not able to chat right now. Please ask the administrator to configure the API key.'
@@ -423,6 +425,8 @@ def chat():
         data = request.get_json()
         user_message = data.get('message', '').strip()
         session_id = request.headers.get('X-Session-ID', 'default')
+        
+        print(f"Received message: {user_message}")  # Debug log
 
         if session_id not in conversations:
             conversations[session_id] = [
@@ -432,24 +436,28 @@ def chat():
         conversations[session_id].append({"role": "user", "content": user_message})
 
         try:
+            print("Sending request to OpenAI API...")  # Debug log
             completion = openai.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=conversations[session_id],
                 max_tokens=150,
                 temperature=0.7
             )
+            print("Received response from OpenAI API")  # Debug log
 
             bot_response = completion.choices[0].message.content.strip()
             conversations[session_id].append({"role": "assistant", "content": bot_response})
             return jsonify({'response': bot_response})
 
         except Exception as e:
+            print(f"OpenAI API error: {str(e)}")  # Debug log
             return jsonify({
                 'error': 'OpenAI API error',
                 'response': f'Lo siento, I am having trouble thinking right now. Error: {str(e)}'
             }), 500
 
     except Exception as e:
+        print(f"General error in chat route: {str(e)}")  # Debug log
         return jsonify({
             'error': 'Failed to process message',
             'response': f'Lo siento, I had trouble understanding that. Error: {str(e)}'
