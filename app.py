@@ -10,7 +10,7 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import openai
+from openai import OpenAI
 import logging
 
 # Set up logging
@@ -103,8 +103,9 @@ def init_csv_files():
 init_csv_files()
 
 # OpenAI Configuration
-openai.api_key = os.getenv('OPENAI_API_KEY')
-print(f"OpenAI API Key configured: {'Yes' if openai.api_key else 'No'}")  # Debug log
+from openai import OpenAI
+api_key = os.getenv('OPENAI_API_KEY')
+print(f"OpenAI API Key configured: {'Yes' if api_key else 'No'}")  # Debug log
 
 # Email configuration
 SMTP_SERVER = "smtp.gmail.com"
@@ -415,8 +416,12 @@ def chatbot():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
-        if not openai.api_key:
-            print("OpenAI API key is not set")  # Debug log
+        print("\n=== Chat Request Started ===")
+        print(f"OpenAI API Key configured: {'Yes' if api_key else 'No'}")
+        print(f"OpenAI API Key: {api_key[:10]}... (first 10 chars)")
+        
+        if not api_key:
+            print("OpenAI API key is not set")
             return jsonify({
                 'error': 'OpenAI API key not configured',
                 'response': 'Lo siento, I am not able to chat right now. Please ask the administrator to configure the API key.'
@@ -426,38 +431,56 @@ def chat():
         user_message = data.get('message', '').strip()
         session_id = request.headers.get('X-Session-ID', 'default')
         
-        print(f"Received message: {user_message}")  # Debug log
+        print(f"Received message: '{user_message}'")
+        print(f"Session ID: {session_id}")
 
         if session_id not in conversations:
+            print("Creating new conversation for session")
             conversations[session_id] = [
                 {"role": "system", "content": SYSTEM_PROMPT}
             ]
 
         conversations[session_id].append({"role": "user", "content": user_message})
+        print(f"Current conversation length: {len(conversations[session_id])}")
 
         try:
-            print("Sending request to OpenAI API...")  # Debug log
-            completion = openai.chat.completions.create(
+            print("\nSending request to OpenAI API...")
+            print("Request details:")
+            print(f"- Model: gpt-3.5-turbo")
+            print(f"- Max tokens: 150")
+            print(f"- Temperature: 0.7")
+            
+            # Create a clean client instance
+            client = OpenAI()  # Let it use the environment variable directly
+            
+            completion = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=conversations[session_id],
                 max_tokens=150,
                 temperature=0.7
             )
-            print("Received response from OpenAI API")  # Debug log
+            print("Received response from OpenAI API")
 
             bot_response = completion.choices[0].message.content.strip()
+            print(f"Bot response: '{bot_response[:50]}...'")
+            
             conversations[session_id].append({"role": "assistant", "content": bot_response})
+            print("=== Chat Request Completed ===\n")
             return jsonify({'response': bot_response})
 
         except Exception as e:
-            print(f"OpenAI API error: {str(e)}")  # Debug log
+            print(f"OpenAI API error: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            print("=== Chat Request Failed ===\n")
             return jsonify({
                 'error': 'OpenAI API error',
                 'response': f'Lo siento, I am having trouble thinking right now. Error: {str(e)}'
             }), 500
 
     except Exception as e:
-        print(f"General error in chat route: {str(e)}")  # Debug log
+        print(f"General error in chat route: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        print("=== Chat Request Failed ===\n")
         return jsonify({
             'error': 'Failed to process message',
             'response': f'Lo siento, I had trouble understanding that. Error: {str(e)}'
