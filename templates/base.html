@@ -17,15 +17,18 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Mobile Navigation Toggle -->
+    <button id="hamburgerMenu" class="hamburger-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Navigation Overlay -->
     <div id="navOverlay" class="nav-overlay"></div>
+
+    <!-- Navigation -->
     <nav id="navBar" class="nav-bar">
-        <button id="hamburgerMenu" class="hamburger-menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        
         <div class="logo-container">
             <div class="logo">
                 <img src="{{ url_for('static', filename='images/cosi_icon.png') }}" alt="Abuelo Cosi" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" onerror="console.error('Failed to load image:', this.src);">
