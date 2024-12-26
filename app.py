@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Set up data directory for persistent storage
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+DATA_DIR = '/opt/render/project/src/data' if os.path.exists('/opt/render/project/src') else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 CSV_DIR = os.path.join(DATA_DIR, 'csv')
 STATIC_DIR = os.path.join(DATA_DIR, 'static')
 IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
@@ -56,29 +56,24 @@ def ensure_directories():
 # Call this function before Flask app setup
 ensure_directories()
 
-# Create symbolic links for static files if we're on Render
-if os.path.exists('/data'):
-    # Define source and target directories
+# Copy static files
+def copy_static_files():
     source_base = os.path.dirname(os.path.abspath(__file__))
     target_base = STATIC_DIR
     
-    # Define directories to copy
     static_dirs = {
         'css': ('static/css', 'css'),
         'js': ('static/js', 'js'),
         'images': ('static/images', 'images')
     }
     
-    # Copy files from source to target
     for dir_type, (src_rel, dst_rel) in static_dirs.items():
         src_dir = os.path.join(source_base, src_rel)
         dst_dir = os.path.join(target_base, dst_rel)
         
-        # Create destination directory
         os.makedirs(dst_dir, exist_ok=True)
         print(f"Created directory: {dst_dir}")
         
-        # Copy files if source directory exists
         if os.path.exists(src_dir):
             print(f"Copying files from {src_dir} to {dst_dir}")
             for filename in os.listdir(src_dir):
@@ -95,6 +90,9 @@ if os.path.exists('/data'):
                         print(f"Error copying {filename}: {str(e)}")
         else:
             print(f"Source directory does not exist: {src_dir}")
+
+# Copy static files on startup
+copy_static_files()
 
 app = Flask(__name__, static_folder=STATIC_DIR)
 CORS(app, resources={r"/*": {
