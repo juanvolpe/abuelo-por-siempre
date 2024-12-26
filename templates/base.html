@@ -3,65 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abuelo por siempre - {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>{% block title %}Abuelo por Siempre{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Base Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Hamburger Menu Button -->
-    <button class="hamburger-menu" id="hamburgerMenu">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-
-    <!-- Overlay for mobile nav -->
-    <div class="nav-overlay" id="navOverlay"></div>
-
-    <!-- Fixed Navigation -->
-    <nav class="nav-bar" id="navBar">
-        <div class="nav-brand-container">
-            <a href="{{ url_for('calendar') }}" class="nav-brand">Abuelo por siempre</a>
-            <div class="grandpa-icon">
-                <svg width="100" height="100" viewBox="0 0 100 100">
-                    <!-- Grandpa's head -->
-                    <circle cx="50" cy="35" r="20" fill="#F5F1E8"/>
-                    <!-- Glasses -->
-                    <path d="M35 32 H65" stroke="#6D4C3D" stroke-width="2"/>
-                    <circle cx="40" cy="32" r="5" fill="none" stroke="#6D4C3D" stroke-width="2"/>
-                    <circle cx="60" cy="32" r="5" fill="none" stroke="#6D4C3D" stroke-width="2"/>
-                    <!-- Smile -->
-                    <path d="M42 38 Q50 44 58 38" stroke="#6D4C3D" stroke-width="2" fill="none"/>
-                    <!-- Hair -->
-                    <path d="M30 25 Q50 10 70 25" stroke="#B8A99A" stroke-width="4" fill="none"/>
-                    <!-- Body -->
-                    <path d="M50 55 L50 80" stroke="#D5C7B2" stroke-width="8"/>
-                    <!-- Arms -->
-                    <path d="M50 60 L30 70" stroke="#D5C7B2" stroke-width="6"/>
-                    <path d="M50 60 L70 70" stroke="#D5C7B2" stroke-width="6"/>
-                    <!-- Walking stick -->
-                    <path d="M70 70 L75 90" stroke="#967259" stroke-width="3"/>
-                </svg>
+    <!-- Navigation -->
+    <div id="navOverlay" class="nav-overlay"></div>
+    <nav id="navBar" class="nav-bar">
+        <button id="hamburgerMenu" class="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
+        <div class="logo-container">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/cosi_icon.png') }}" alt="Abuelo Cosi" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
             </div>
+            <h1 class="nav-title">Abuelo por siempre</h1>
         </div>
         <div class="nav-links">
-            <a href="{{ url_for('calendar') }}" class="nav-link {% if request.endpoint == 'calendar' %}active{% endif %}">
+            <a href="/" class="nav-link active">
                 <i class="far fa-calendar-alt"></i>
                 <span>Calendar & Mood</span>
             </a>
-            <a href="{{ url_for('chatbot') }}" class="nav-link {% if request.endpoint == 'chatbot' %}active{% endif %}">
+            <a href="/chatbot" class="nav-link">
                 <i class="fas fa-comments"></i>
                 <span>Chat with Abuelo</span>
             </a>
-        </div>
-        
-        <div class="quote-container">
-            <div class="quote-icon">
-                <i class="fas fa-quote-left"></i>
-            </div>
-            <p class="quote-text">"Los nietos son la recompensa de haber sido padres."</p>
-            <p class="quote-author">- Abuelo Cosi</p>
         </div>
     </nav>
 
