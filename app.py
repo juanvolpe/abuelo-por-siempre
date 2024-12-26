@@ -576,5 +576,53 @@ def delete_file():
         print(f"Error deleting file: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/admin/cleanup/images', methods=['POST'])
+def cleanup_images():
+    try:
+        # Delete all files in the images directory
+        if os.path.exists(IMAGES_DIR):
+            for filename in os.listdir(IMAGES_DIR):
+                file_path = os.path.join(IMAGES_DIR, filename)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+        
+        # Remove image references from notes
+        notes = load_calendar_notes()
+        for date in notes:
+            if isinstance(notes[date], dict):
+                notes[date]['images'] = []
+        save_calendar_notes(notes)
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error cleaning up images: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/cleanup/notes', methods=['POST'])
+def cleanup_notes():
+    try:
+        # Clear the calendar notes file
+        with open(CALENDAR_NOTES_CSV, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['date', 'note'])  # Write header only
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error cleaning up notes: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/cleanup/mood-tracker', methods=['POST'])
+def cleanup_mood_tracker():
+    try:
+        # Clear the mood tracker file
+        with open(MOOD_TRACKER_CSV, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['date', 'name', 'score', 'message'])  # Write header only
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error cleaning up mood tracker: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8082, debug=True) 
