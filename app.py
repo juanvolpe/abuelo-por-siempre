@@ -40,27 +40,38 @@ def ensure_directories():
         DATA_DIR,
         CSV_DIR,
         STATIC_DIR,
-        IMAGES_DIR
+        IMAGES_DIR,
+        os.path.join(STATIC_DIR, 'css'),
+        os.path.join(STATIC_DIR, 'js')
     ]
     
     for directory in directories:
         try:
             os.makedirs(directory, exist_ok=True)
-            print(f"Created directory: {directory}")  # Add explicit print for debugging
+            print(f"Created directory: {directory}")
         except Exception as e:
             print(f"Error creating directory {directory}: {str(e)}")
 
 # Call this function before Flask app setup
 ensure_directories()
 
-# Create symbolic link for static/images if we're on Render
+# Create symbolic links for static files if we're on Render
 if os.path.exists('/data'):
-    static_images_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
-    if not os.path.exists(static_images_path):
-        os.makedirs(os.path.dirname(static_images_path), exist_ok=True)
-        if os.path.exists(static_images_path):
-            os.remove(static_images_path)
-        os.symlink(IMAGES_DIR, static_images_path)
+    static_dirs = {
+        'images': IMAGES_DIR,
+        'css': os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'css'),
+        'js': os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'js')
+    }
+    
+    for dir_name, source_path in static_dirs.items():
+        target_path = os.path.join(STATIC_DIR, dir_name)
+        if not os.path.exists(target_path):
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            if os.path.exists(target_path):
+                os.remove(target_path)
+            if os.path.exists(source_path):
+                os.symlink(source_path, target_path)
+                print(f"Created symlink: {source_path} -> {target_path}")
 
 app = Flask(__name__, static_folder=STATIC_DIR)
 CORS(app, resources={r"/*": {
