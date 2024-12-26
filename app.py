@@ -12,13 +12,14 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from openai import OpenAI
 import logging
+import shutil
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Set up data directory for persistent storage
-DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 CSV_DIR = os.path.join(DATA_DIR, 'csv')
 STATIC_DIR = os.path.join(DATA_DIR, 'static')
 IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
@@ -81,18 +82,19 @@ if os.path.exists('/data'):
         if os.path.exists(src_dir):
             print(f"Copying files from {src_dir} to {dst_dir}")
             for filename in os.listdir(src_dir):
+                if filename.startswith('.'): # Skip hidden files
+                    continue
                 src_file = os.path.join(src_dir, filename)
                 dst_file = os.path.join(dst_dir, filename)
                 if os.path.isfile(src_file):
                     try:
-                        import shutil
-                        print(f"Copying file: {filename}")
+                        print(f"Copying file: {filename} to {dst_file}")
                         shutil.copy2(src_file, dst_file)
                         print(f"Successfully copied: {filename}")
                     except Exception as e:
                         print(f"Error copying {filename}: {str(e)}")
-            else:
-                print(f"Source directory does not exist: {src_dir}")
+        else:
+            print(f"Source directory does not exist: {src_dir}")
 
 app = Flask(__name__, static_folder=STATIC_DIR)
 CORS(app, resources={r"/*": {
@@ -526,12 +528,23 @@ def chat():
 @app.route('/test-directories')
 def test_directories():
     try:
-        dirs = {
-            'DATA_DIR': {'path': DATA_DIR, 'exists': os.path.exists(DATA_DIR), 'contents': os.listdir(DATA_DIR) if os.path.exists(DATA_DIR) else []},
-            'STATIC_DIR': {'path': STATIC_DIR, 'exists': os.path.exists(STATIC_DIR), 'contents': os.listdir(STATIC_DIR) if os.path.exists(STATIC_DIR) else []},
-            'IMAGES_DIR': {'path': IMAGES_DIR, 'exists': os.path.exists(IMAGES_DIR), 'contents': os.listdir(IMAGES_DIR) if os.path.exists(IMAGES_DIR) else []}
-        }
-        return jsonify(dirs)
+        return jsonify({
+            'data_dir': {
+                'path': DATA_DIR,
+                'exists': os.path.exists(DATA_DIR),
+                'contents': os.listdir(DATA_DIR) if os.path.exists(DATA_DIR) else []
+            },
+            'static_dir': {
+                'path': STATIC_DIR,
+                'exists': os.path.exists(STATIC_DIR),
+                'contents': os.listdir(STATIC_DIR) if os.path.exists(STATIC_DIR) else []
+            },
+            'images_dir': {
+                'path': IMAGES_DIR,
+                'exists': os.path.exists(IMAGES_DIR),
+                'contents': os.listdir(IMAGES_DIR) if os.path.exists(IMAGES_DIR) else []
+            }
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
