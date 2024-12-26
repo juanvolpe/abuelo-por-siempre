@@ -86,12 +86,13 @@ if os.path.exists('/data'):
                 if os.path.isfile(src_file):
                     try:
                         import shutil
+                        print(f"Copying file: {filename}")
                         shutil.copy2(src_file, dst_file)
-                        print(f"Copied: {filename}")
+                        print(f"Successfully copied: {filename}")
                     except Exception as e:
                         print(f"Error copying {filename}: {str(e)}")
-        else:
-            print(f"Source directory does not exist: {src_dir}")
+            else:
+                print(f"Source directory does not exist: {src_dir}")
 
 app = Flask(__name__, static_folder=STATIC_DIR)
 CORS(app, resources={r"/*": {
@@ -636,6 +637,16 @@ def get_mood_tracker_entries():
     except Exception as e:
         print(f"Error getting mood tracker entries: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/test-image')
+def test_image():
+    image_path = os.path.join(IMAGES_DIR, 'cosi_icon.png')
+    exists = os.path.exists(image_path)
+    return jsonify({
+        'exists': exists,
+        'path': image_path,
+        'images_dir_contents': os.listdir(IMAGES_DIR) if os.path.exists(IMAGES_DIR) else []
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8082, debug=True) 
