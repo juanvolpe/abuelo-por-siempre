@@ -56,6 +56,14 @@
             </div>
         </div>
     </div>
+
+    <div class="section">
+        <h2>Upload Image</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" accept="image/*">
+            <button type="submit">Upload</button>
+        </form>
+    </div>
 </div>
 
 <div id="imageModal" class="modal">
@@ -497,5 +505,30 @@ async function loadMoodTrackerEntries() {
         console.error('Error loading mood tracker entries:', error);
     }
 }
+
+// Add file upload handling
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData();
+    const fileInput = document.getElementById('fileInput');
+    formData.append('file', fileInput.files[0]);
+
+    try {
+        const response = await fetch('/admin/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('File uploaded successfully!');
+            // Refresh the file list
+            loadFiles();
+        } else {
+            alert('Error uploading file: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error uploading file: ' + error);
+    }
+});
 </script>
 {% endblock %} 

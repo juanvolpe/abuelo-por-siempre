@@ -659,5 +659,26 @@ def test_image():
         'images_dir_contents': os.listdir(IMAGES_DIR) if os.path.exists(IMAGES_DIR) else []
     })
 
+@app.route('/admin/upload', methods=['POST'])
+def upload_file():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        
+        if file:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(IMAGES_DIR, filename)
+            print(f"Saving file to: {file_path}")
+            file.save(file_path)
+            print(f"File saved successfully: {filename}")
+            return jsonify({'success': True, 'filename': filename})
+    except Exception as e:
+        print(f"Error uploading file: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8082, debug=True) 
