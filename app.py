@@ -13,9 +13,17 @@ from email.mime.multipart import MIMEMultipart
 from openai import OpenAI
 import logging
 
-# Set up logging Cambio testeo
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Add debug prints for directory paths
+DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(DATA_DIR, 'static')
+
+print(f"DATA_DIR is: {DATA_DIR}")
+print(f"STATIC_DIR is: {STATIC_DIR}")
+print(f"Static directory exists: {os.path.exists(STATIC_DIR)}")
 
 print("Checking data directory...")
 print(f"Does /data exist? {os.path.exists('/data')}")
