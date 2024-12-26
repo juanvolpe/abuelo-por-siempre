@@ -17,25 +17,22 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Add debug prints for directory paths
+# Set up data directory for persistent storage
 DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
+CSV_DIR = os.path.join(DATA_DIR, 'csv')
 STATIC_DIR = os.path.join(DATA_DIR, 'static')
+IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
 
 print(f"DATA_DIR is: {DATA_DIR}")
 print(f"STATIC_DIR is: {STATIC_DIR}")
 print(f"Static directory exists: {os.path.exists(STATIC_DIR)}")
+print(f"IMAGES_DIR is: {IMAGES_DIR}")
 
 print("Checking data directory...")
 print(f"Does /data exist? {os.path.exists('/data')}")
 print(f"Current directory contents: {os.listdir('/')}")
 if os.path.exists('/data'):
     print(f"Data directory contents: {os.listdir('/data')}")
-
-# Set up data directory for persistent storage
-DATA_DIR = '/data' if os.path.exists('/data') else os.path.dirname(os.path.abspath(__file__))
-CSV_DIR = os.path.join(DATA_DIR, 'csv')
-STATIC_DIR = os.path.join(DATA_DIR, 'static')
-IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
 
 # Enhanced directory creation with logging
 def ensure_directories():
