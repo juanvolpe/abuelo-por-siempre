@@ -57,21 +57,41 @@ ensure_directories()
 
 # Create symbolic links for static files if we're on Render
 if os.path.exists('/data'):
+    # Define source and target directories
+    source_base = os.path.dirname(os.path.abspath(__file__))
+    target_base = STATIC_DIR
+    
+    # Define directories to copy
     static_dirs = {
-        'images': IMAGES_DIR,
-        'css': os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'css'),
-        'js': os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'js')
+        'css': ('static/css', 'css'),
+        'js': ('static/js', 'js'),
+        'images': ('static/images', 'images')
     }
     
-    for dir_name, source_path in static_dirs.items():
-        target_path = os.path.join(STATIC_DIR, dir_name)
-        if not os.path.exists(target_path):
-            os.makedirs(os.path.dirname(target_path), exist_ok=True)
-            if os.path.exists(target_path):
-                os.remove(target_path)
-            if os.path.exists(source_path):
-                os.symlink(source_path, target_path)
-                print(f"Created symlink: {source_path} -> {target_path}")
+    # Copy files from source to target
+    for dir_type, (src_rel, dst_rel) in static_dirs.items():
+        src_dir = os.path.join(source_base, src_rel)
+        dst_dir = os.path.join(target_base, dst_rel)
+        
+        # Create destination directory
+        os.makedirs(dst_dir, exist_ok=True)
+        print(f"Created directory: {dst_dir}")
+        
+        # Copy files if source directory exists
+        if os.path.exists(src_dir):
+            print(f"Copying files from {src_dir} to {dst_dir}")
+            for filename in os.listdir(src_dir):
+                src_file = os.path.join(src_dir, filename)
+                dst_file = os.path.join(dst_dir, filename)
+                if os.path.isfile(src_file):
+                    try:
+                        import shutil
+                        shutil.copy2(src_file, dst_file)
+                        print(f"Copied: {filename}")
+                    except Exception as e:
+                        print(f"Error copying {filename}: {str(e)}")
+        else:
+            print(f"Source directory does not exist: {src_dir}")
 
 app = Flask(__name__, static_folder=STATIC_DIR)
 CORS(app, resources={r"/*": {
